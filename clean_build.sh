@@ -14,7 +14,16 @@ if [ "$(uname)" = "Darwin" ]; then
     # OSX needs a lot of extra help, poor thing
     # run the osx_environment.sh script to fix paths
     . ./osx_environment.sh
-    B_CMAKE_FLAGS="-DCMAKE_OSX_SYSROOT=$(xcode-select --print-path)/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 $B_CMAKE_FLAGS"
+
+    # default to 12.0, fallback to 10.9
+    OSX_DEPLOY_TARGET="12.0"
+    [ ! "$OSTYPE" == "darwin21"* ] && OSX_DEPLOY_TARGET="10.9"
+
+    # prefer newest MacOSX.sdk
+    OSX_SYSROOT="$(xcode-select --print-path)/SDKs/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
+    [ ! -d "$OSX_SYSROOT" ] && OSX_SYSROOT="$(xcode-select --print-path)/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
+
+    B_CMAKE_FLAGS="-DCMAKE_OSX_SYSROOT=$OSX_SYSROOT -DCMAKE_OSX_DEPLOYMENT_TARGET=$OSX_DEPLOY_TARGET $B_CMAKE_FLAGS"
 fi
 # allow local customizations to build environment
 [ -r ./build_env.sh ] && . ./build_env.sh
